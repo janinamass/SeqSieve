@@ -296,7 +296,7 @@ def usage():
                                     "Sites", "Gaps", "uGaps","Insertions",
                                     "uInsertions","uInsertionsGaps", "custom"
 
-        -q, --no-realign        don't align for each iteration (not recommended)
+        -q, --no-realign        don't realign with each iteration (not recommended)
         -l, --log       write logfile
         -p, --print_alignment   print column-wise alignment to command line
         -h, --help      prints this

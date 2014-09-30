@@ -1,8 +1,11 @@
 ===========
-SeqSieve
+seqSieve
 ===========
 
-**SeqSieve** will try to remove sequences that cause misalignments from a multiple sequence alignment (MSA). It reads a given MSA in multi-fasta format and removes sequences with the highest penalty scores, then builds the next MSA without those sequences. This process is repeated until a user-specified cuttoff is reached or less than three sequences are left to be aligned.
+**seqSieve** will try to remove sequences that cause misalignments from a multiple sequence alignment(MSA).
+It reads a given MSA in multi-fasta format and removes sequences with the highest penalty scores, 
+then builds the next MSA without those sequences. This process is repeated until a user-specified 
+cutt-off is reached or less than three sequences are left to be aligned.
 
 Usage::
     
@@ -24,6 +27,7 @@ Usage::
                                 available modes (not case sensitive):
                                     "Sites", "Gaps", "uGaps","Insertions",
                                     "uInsertions","uInsertionsGaps", "custom"
+        -q, --no-realign        don't realign with each iteration (not recommended)                        
         -l, --log       write logfile
         -h, --help      prints this
 
@@ -38,8 +42,10 @@ Usage::
 
 Currently supported multiple sequence aligners:
 
-- mafft (Katoh, Standley 2013 (Molecular Biology and Evolution 30:772-780) MAFFT multiple sequence alignment software version 7: improvements in performance and usability. http://mafft.cbrc.jp/alignment/software/)
-- prank (Loytynoja, Goldman  2005 (PNAS 102:10557-10562) An algorithm for progressive multiple alignment of sequences with insertions. http://www.ebi.ac.uk/goldman-srv/prank/prank/
+- mafft (Katoh, Standley 2013 (Molecular Biology and Evolution 30:772-780) 
+  MAFFT multiple sequence alignment software version 7: improvements in performance and usability. http://mafft.cbrc.jp/alignment/software/)
+- prank (Loytynoja, Goldman  2005 (PNAS 102:10557-10562) 
+  An algorithm for progressive multiple alignment of sequences with insertions. http://www.ebi.ac.uk/goldman-srv/prank/prank/
 
 Requirements
 ============
@@ -48,6 +54,5 @@ Requirements
 
 External Programs
 -----------------
-* mafft
-and/or
+* mafft and/or
 * prank
