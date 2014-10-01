@@ -20,7 +20,7 @@ Usage::
         -F, --fasta_dir=DIR directory with multifasta files (needs -s SUFFIX)
         -s, --suffix=SUFFIX will try to work with files that end with SUFFIX (eg ".fas")
 
-        -a, --msa_tool=STR  supported: "mafft" [default:"mafft"]
+        -a, --msa_tool=STR  supported: "mafft", prank, prankf (= prank +F) [default:"mafft"]
         -i, --max_iterations=NUM    force stop after NUM iterations
         -n, --num_threads=NUM   max number of threads to be executed in parallel [default: 1]
         -m, --mode=MODE         set strategy to remove outlier sequences [default: "Sites"]
