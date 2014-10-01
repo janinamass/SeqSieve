@@ -624,8 +624,11 @@ def schoenify(fasta=None,
                         '_iter.svg', bbox_inches='tight', ext="svg")
             plt.clf()
             finalfa = tmpdir+os.sep+".".join(fastabase.split(".")[0:-1]) + "_"+str(max_index)+".fa"
+            finalfa_aln = tmpdir+os.sep+".".join(fastabase.split(".")[0:-1]) + "_"+str(max_index)+"_aln.fa"
             finalfabase = os.path.basename(finalfa)
             shutil.copy(finalfa, finaldir+os.sep+finalfabase)
+            print(finalfa_aln)
+            shutil.copy(finalfa_aln, finaldir+os.sep+os.path.basename(finalfa_aln))
         except ValueError as e:
             sys.stderr.write(str(e))
         finally:
