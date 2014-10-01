@@ -783,7 +783,7 @@ def main():
                                         "unique_insertion_penalty=",
                                         "mismatch_penalty=",
                                         "match_reward=",
-                                        "no-realign"
+                                        "no-realign",
                                         "log",
                                         "help",
                                         "print_alignment"])
@@ -829,6 +829,7 @@ def main():
         elif o in ("-r", "--match_reward"):
             match_reward = float(a)
         else:
+            print(o)
             assert False, "unhandled option"
     if not fastalist and not (fastadir and suffix):
         usage()
