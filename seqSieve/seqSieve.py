@@ -495,7 +495,7 @@ def schoenify(fasta=None,
             for k in to_keep:
                 seq = "".join([s for s in k.sequence if s != GAP])
                 res += (">{}\n{}\n".format(k.name, seq))
-            iterfile = tmpdir+os.sep+".".join(fastabase.split(".")[0:-1])+"_"+str(iteration)
+            iterfile = tmpdir+os.sep+".".join(fastabase.split(".")[0:-1])+"_"+str(iteration+1)
 
             with open(iterfile+".fa", 'w') as out:
                 out.write(res)
@@ -507,11 +507,14 @@ def schoenify(fasta=None,
             if logging:
                 for m in alignment.members:
                     info.write(m.summary(noheaders=True)+"\n")
-            #log
 
             alignmentstats.append(alignment.get_stats().split(","))
+            #debug
+            print("#debug: header:             {}".format(header_tab))
+            print("#debug: alignment.get_stats:{}".format(alignment.get_stats()))
+            print("#debug: alignment members: {}".format(len(alignment.members)))
             tmp_stats_num = alignment.get_stats_num()
-            iter_tab.append((",".join(x for y in alignmentstats for x in y))+","+str(iteration)+
+            iter_tab.append((",".join(x for y in alignmentstats for x in y))+","+str(iteration) +
                             "," + str(len(alignment.members)) + "," +
                             str((tmp_stats_num[5]-tmp_stats_num[4])*len(alignment.members)))
             alignmentstats = []
@@ -524,14 +527,17 @@ def schoenify(fasta=None,
                 proc.communicate()
                 alignment = Alignment(name=iterfile, fasta=iterfile+"_aln.fa")
 
-
             #prank +F
             elif msa_tool == "prankf":
                 proc = subprocess.Popen(["prank", "+F", "-d="+iterfile+".fa", "-o="+iterfile],
                                         stderr=subprocess.PIPE,
-                                        stdout=subprocess.PIPE,
-                                        bufsize=1)
-                proc.stderr.read()
+                                        stdout=subprocess.PIPE)
+                errs = proc.stderr.read()
+                if errs:
+                    sys.stderr.write(errs)
+                stdoutput = proc.stdout.read()
+                if logging:
+                    print(stdoutput)
                 proc.communicate()
                 shutil.move(iterfile+".best.fas", iterfile+"_aln.fa")
                 alignment = Alignment(name=iterfile, fasta=iterfile+"_aln.fa")
@@ -539,9 +545,14 @@ def schoenify(fasta=None,
             elif msa_tool == "prank":
                 proc = subprocess.Popen(["prank", "-d="+iterfile+".fa", "-o="+iterfile],
                                         stderr=subprocess.PIPE,
-                                        stdout=subprocess.PIPE,
-                                        bufsize=1)
-                proc.stderr.read()
+                                        stdout=subprocess.PIPE)
+                errs = proc.stderr.read()
+                if errs:
+                    sys.stderr.write(errs)
+                stdoutput = proc.stdout.read()
+                if logging:
+                    print(stdoutput)
+
                 proc.communicate()
                 shutil.move(iterfile+".best.fas", iterfile+"_aln.fa")
                 alignment = Alignment(name=iterfile, fasta=iterfile+"_aln.fa")
