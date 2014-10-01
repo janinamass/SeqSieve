@@ -1,18 +1,19 @@
 from setuptools import setup, find_packages
 setup(
-        name='SeqSieve',
+        name='seqSieve',
         version='0.9.0',
         author='Janina Mass',
         author_email='janina.mass@hhu.de',
         packages=find_packages(),
-        scripts=['SeqSieve/seqSieve.py'],
+        scripts=['seqSieve/seqSieve.py'],
         license='GPLv3',
         url='https://pypi.python.org/pypi/seqSieve/',
         description='Remove outlier sequences from multiple sequence alignment',
-        long_description=open('README.txt').read(),
+        long_description=open('README.md').read(),
         install_requires=['numpy', 'matplotlib'],
         classifiers=[
             'Programming Language :: Python :: 2.7',
+            'Programming Language :: Python :: 3',
             'Topic :: Scientific/Engineering :: Bio-Informatics'
             ],
         )
