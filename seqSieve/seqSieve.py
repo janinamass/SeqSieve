@@ -623,10 +623,22 @@ def schoenify(fasta=None,
                         ".".join(fastabase.split(".")[0:-1]) +
                         '_iter.svg', bbox_inches='tight', ext="svg")
             plt.clf()
-            finalfa = tmpdir+os.sep+".".join(fastabase.split(".")[0:-1]) + "_"+str(max_index)+".fa"
-            finalfa_aln = tmpdir+os.sep+".".join(fastabase.split(".")[0:-1]) + "_"+str(max_index)+"_aln.fa"
+
+
+
+            #original was best, original and 1st iteration have the same sequences
+            if max_index == 0:
+                finalfa = tmpdir+os.sep+".".join(fastabase.split(".")[0:-1]) + "_"+str(1)+".fa"
+                finalfa_aln = fasta
+                shutil.copy(finalfa, finaldir+os.sep+os.sep+".".join(fastabase.split(".")[0:-1]) + "_"+"orig"+".fa")
+                print(finalfa_aln, finalfa)
+            else:
+                finalfa = tmpdir+os.sep+".".join(fastabase.split(".")[0:-1]) + "_"+str(max_index)+".fa"
+                finalfabase = os.path.basename(finalfa)
+                shutil.copy(finalfa, finaldir+os.sep+finalfabase)
+                finalfa_aln = tmpdir+os.sep+".".join(fastabase.split(".")[0:-1]) + "_"+str(max_index)+"_aln.fa"
             finalfabase = os.path.basename(finalfa)
-            shutil.copy(finalfa, finaldir+os.sep+finalfabase)
+           # shutil.copy(finalfa, finaldir+os.sep+finalfabase)
             print(finalfa_aln)
             shutil.copy(finalfa_aln, finaldir+os.sep+os.path.basename(finalfa_aln))
         except ValueError as e:
