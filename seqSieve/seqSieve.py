@@ -509,10 +509,6 @@ def schoenify(fasta=None,
                     info.write(m.summary(noheaders=True)+"\n")
 
             alignmentstats.append(alignment.get_stats().split(","))
-            #debug
-            print("#debug: header:             {}".format(header_tab))
-            print("#debug: alignment.get_stats:{}".format(alignment.get_stats()))
-            print("#debug: alignment members: {}".format(len(alignment.members)))
             tmp_stats_num = alignment.get_stats_num()
             iter_tab.append((",".join(x for y in alignmentstats for x in y))+","+str(iteration) +
                             "," + str(len(alignment.members)) + "," +
