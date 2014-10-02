@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 setup(
         name='seqSieve',
-        version='0.9.0',
+        version='0.9.1',
         author='Janina Mass',
         author_email='janina.mass@hhu.de',
         packages=find_packages(),

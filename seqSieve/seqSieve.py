@@ -277,7 +277,7 @@ class FastaParser(object):
 def usage():
     print("""
     ######################################
-    # seqSieve.py v0.9.0
+    # seqSieve.py v0.9.1
     ######################################
     usage:
         seqSieve.py -f multifasta alignment
@@ -528,13 +528,11 @@ def schoenify(fasta=None,
                 proc = subprocess.Popen(["prank", "+F", "-d="+iterfile+".fa", "-o="+iterfile],
                                         stderr=subprocess.PIPE,
                                         stdout=subprocess.PIPE)
-                errs = proc.stderr.read()
-                if errs:
-                    sys.stderr.write(errs)
-                stdoutput = proc.stdout.read()
+                perr, pout = proc.communicate()
                 if logging:
-                    print(stdoutput)
-                proc.communicate()
+                    print(pout)
+                if perr:
+                    sys.stderr.write(str(perr))
                 shutil.move(iterfile+".best.fas", iterfile+"_aln.fa")
                 alignment = Alignment(name=iterfile, fasta=iterfile+"_aln.fa")
 
@@ -542,14 +540,11 @@ def schoenify(fasta=None,
                 proc = subprocess.Popen(["prank", "-d="+iterfile+".fa", "-o="+iterfile],
                                         stderr=subprocess.PIPE,
                                         stdout=subprocess.PIPE)
-                errs = proc.stderr.read()
-                if errs:
-                    sys.stderr.write(errs)
-                stdoutput = proc.stdout.read()
+                perr, pout = proc.communicate()
                 if logging:
-                    print(stdoutput)
-
-                proc.communicate()
+                    print(pout)
+                if perr:
+                    sys.stderr.write(str(perr))
                 shutil.move(iterfile+".best.fas", iterfile+"_aln.fa")
                 alignment = Alignment(name=iterfile, fasta=iterfile+"_aln.fa")
             elif msa_tool == "no-realign":
@@ -574,7 +569,6 @@ def schoenify(fasta=None,
         plt.figure(1)
         plt.suptitle(fastabase, fontsize=12)
         ax = plt.subplot(3, 1, 1)
-        #
 
         try:
             plt.xticks(numpy.arange(min(arr[:, 6]), max(arr[:, 6])+1, 2.0))
@@ -588,19 +582,12 @@ def schoenify(fasta=None,
         handles, labels = ax.get_legend_handles_labels()
         ax.legend(handles, labels, bbox_to_anchor=(1.03, 1), loc=2, borderaxespad=0.)
         ax = plt.subplot(3, 1, 2)
-        #
         plt.xticks(numpy.arange(min(arr[:, 6]), max(arr[:, 6])+1, 2.0))
-        #
         plt.plot(arr[:, 6], arr[:, 7])
         ax.set_ylabel('count')
-         #
-        #plt.yticks(numpy.arange(min(arr[:, 5]), max(arr[:, 5])+1, 1.0))
-        #
         ax.legend(["numSeq"], bbox_to_anchor=(1.03, 0.3), loc=2, borderaxespad=0.)
         ax = plt.subplot(3, 1, 3)
-        #
         plt.xticks(numpy.arange(min(arr[:, 6]), max(arr[:, 6])+1, 2.0))
-        #
         scoring = (arr[:, 5]-arr[:, 4])*arr[:, 7]
 
         try:
@@ -633,9 +620,6 @@ def schoenify(fasta=None,
                 finalfabase = os.path.basename(finalfa)
                 shutil.copy(finalfa, finaldir+os.sep+finalfabase)
                 finalfa_aln = tmpdir+os.sep+".".join(fastabase.split(".")[0:-1]) + "_"+str(max_index)+"_aln.fa"
-            finalfabase = os.path.basename(finalfa)
-           # shutil.copy(finalfa, finaldir+os.sep+finalfabase)
-            print(finalfa_aln)
             shutil.copy(finalfa_aln, finaldir+os.sep+os.path.basename(finalfa_aln))
         except ValueError as e:
             sys.stderr.write(str(e))
