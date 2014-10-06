@@ -288,7 +288,7 @@ def usage():
         -s, --suffix=SUFFIX will try to work with files that end with SUFFIX (eg ".fas")
 
         -o, --outdir=STR    output directory (default: base directory of input file)
-        -a, --msa_tool=STR  supported: "mafft", prank, prankf (= prank +F) [default:"mafft"]
+        -a, --msa_tool=STR  supported: "mafft", "prank", "prankf" (= prank +F) [default:"mafft"]
         -i, --max_iterations=NUM    force stop after NUM iterations
         -n, --num_threads=NUM   max number of threads to be executed in parallel [default: 1]
         -m, --mode=MODE         set strategy to remove outlier sequences [default: "Sites"]
@@ -296,7 +296,7 @@ def usage():
                                     "Sites", "Gaps", "uGaps","Insertions",
                                     "uInsertions","uInsertionsGaps", "custom"
 
-        -q, --no-realign        don't realign with each iteration (not recommended)
+        -q, --no-realign        don't realign with each iteration (faster, less accurate)
         -l, --log       write logfile
         -p, --print_alignment   print column-wise alignment to command line
         -h, --help      prints this
@@ -845,8 +845,8 @@ def main():
             finaldir = fastadir + os.sep + PREFIXOUT
             tmpdir = fastadir + os.sep + PREFIXTMP
         else:
-            finaldir = os.path.dirname(fastalist[0])+os.sep+PREFIXOUT
-            tmpdir = os.path.dirname(fastalist[0])+os.sep+PREFIXTMP
+            finaldir = os.path.abspath(os.path.dirname(fastalist[0]))+os.sep+PREFIXOUT
+            tmpdir = os.path.abspath(os.path.dirname(fastalist[0]))+os.sep+PREFIXTMP
     else:
         if not os.path.exists(outdir):
             os.mkdir(outdir)
