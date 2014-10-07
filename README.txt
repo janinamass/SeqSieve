@@ -1,8 +1,28 @@
 ===========
-SeqSieve
+seqSieve
 ===========
 
-**SeqSieve** will try to remove sequences that cause misalignments from a multiple sequence alignment (MSA). It reads a given MSA in multi-fasta format and removes sequences with the highest penalty scores, then builds the next MSA without those sequences. This process is repeated until a user-specified cuttoff is reached or less than three sequences are left to be aligned.
+Installation::
+
+    pip install seqSieve
+    
+This should also install numpy and matplotlib automatically if necessary.
+If you have trouble installing dependencies via pip, try installing 
+them with your distribution's package manager.
+On debian do:
+
+    apt-get install python-matplotlib python-numpy
+    
+It is also possible to execute seqSieve.py without installation
+    
+    python seqSieve/seqSieve.py
+    
+    
+    
+**seqSieve** will try to remove sequences that cause misalignments from a multiple sequence alignment(MSA).
+It reads a given MSA in multi-fasta format and removes sequences with the highest penalty scores, 
+then builds the next MSA without those sequences. This process is repeated until a user-specified 
+cutt-off is reached or less than three sequences are left to be aligned.
 
 Usage::
     
@@ -17,13 +37,14 @@ Usage::
         -F, --fasta_dir=DIR directory with multifasta files (needs -s SUFFIX)
         -s, --suffix=SUFFIX will try to work with files that end with SUFFIX (eg ".fas")
 
-        -a, --msa_tool=STR  supported: "mafft" [default:"mafft"]
+        -a, --msa_tool=STR  supported: "mafft", prank, prankf (= prank +F) [default:"mafft"]
         -i, --max_iterations=NUM    force stop after NUM iterations
         -n, --num_threads=NUM   max number of threads to be executed in parallel [default: 1]
         -m, --mode=MODE         set strategy to remove outlier sequences [default: "Sites"]
                                 available modes (not case sensitive):
                                     "Sites", "Gaps", "uGaps","Insertions",
                                     "uInsertions","uInsertionsGaps", "custom"
+        -q, --no-realign        don't realign with each iteration (not recommended)                        
         -l, --log       write logfile
         -h, --help      prints this
 
@@ -38,8 +59,10 @@ Usage::
 
 Currently supported multiple sequence aligners:
 
-- mafft (Katoh, Standley 2013 (Molecular Biology and Evolution 30:772-780) MAFFT multiple sequence alignment software version 7: improvements in performance and usability. http://mafft.cbrc.jp/alignment/software/)
-- prank (Loytynoja, Goldman  2005 (PNAS 102:10557-10562) An algorithm for progressive multiple alignment of sequences with insertions. http://www.ebi.ac.uk/goldman-srv/prank/prank/
+- mafft (Katoh, Standley 2013 (Molecular Biology and Evolution 30:772-780) 
+  MAFFT multiple sequence alignment software version 7: improvements in performance and usability. http://mafft.cbrc.jp/alignment/software/)
+- prank (Loytynoja, Goldman  2005 (PNAS 102:10557-10562) 
+  An algorithm for progressive multiple alignment of sequences with insertions. http://www.ebi.ac.uk/goldman-srv/prank/prank/
 
 Requirements
 ============
@@ -48,6 +71,5 @@ Requirements
 
 External Programs
 -----------------
-* mafft
-and/or
+* mafft and/or
 * prank

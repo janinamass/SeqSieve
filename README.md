@@ -2,6 +2,23 @@
 seqSieve
 ===========
 
+Installation::
+
+    pip install seqSieve
+    
+This should also install numpy and matplotlib automatically if necessary.
+If you have trouble installing dependencies via pip, try installing 
+them with your distribution's package manager.
+On debian do:
+
+    apt-get install python-matplotlib python-numpy
+    
+It is also possible to execute seqSieve.py without installation
+    
+    python seqSieve/seqSieve.py
+    
+    
+    
 **seqSieve** will try to remove sequences that cause misalignments from a multiple sequence alignment(MSA).
 It reads a given MSA in multi-fasta format and removes sequences with the highest penalty scores, 
 then builds the next MSA without those sequences. This process is repeated until a user-specified 
