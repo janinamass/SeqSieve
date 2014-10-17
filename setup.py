@@ -9,7 +9,7 @@ setup(
         license='GPLv3',
         url='https://pypi.python.org/pypi/seqSieve/',
         description='Remove outlier sequences from multiple sequence alignment',
-        long_description=open('README.md').read(),
+        long_description=open('README.txt').read(),
         include_package_data=True,
         install_requires=['numpy', 'matplotlib'],
         classifiers=[
