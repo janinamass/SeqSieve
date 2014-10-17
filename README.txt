@@ -2,20 +2,21 @@
 seqSieve
 ===========
 
-Installation::
+Installation:
 
     pip install seqSieve
     
 This should also install numpy and matplotlib automatically if necessary.
 If you have trouble installing dependencies via pip, try installing 
 them with your distribution's package manager.
+
 On debian do:
 
     apt-get install python-matplotlib python-numpy
     
-It is also possible to execute seqSieve.py without installation
+It is also possible to run seqSieve without installation
     
-    python seqSieve/seqSieve.py
+    python seqSieve/seqSieve
     
     
     
@@ -24,13 +25,13 @@ It reads a given MSA in multi-fasta format and removes sequences with the highes
 then builds the next MSA without those sequences. This process is repeated until a user-specified 
 cutt-off is reached or less than three sequences are left to be aligned.
 
-Usage::
+Usage:
     
     ######################################
-    # seqSieve.py
+    # seqSieve
     ######################################
     usage:
-       seqSieve.py -f multifasta alignment
+       seqSieve -f multifasta alignment
     options:
         -f, --fasta=FILE    multifasta alignment (eg. "align.fas")
         OR
