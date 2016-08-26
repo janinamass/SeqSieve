@@ -32,7 +32,7 @@ import matplotlib.pyplot as plt
 import numpy
 from distutils import spawn
 
-__version__ = "0.9.2"
+__version__ = "0.9.3"
 
 GAP = "-"
 LOCK = threading.Lock()
@@ -55,7 +55,6 @@ class Alignment(object):
         self.calc_numbers()
 
         self.usop = self.calc_usop()
-        print("debug: usop: {}".format(self.usop))
 
     def __repr__(self):
         ids = self.members
@@ -78,7 +77,6 @@ class Alignment(object):
                                           len(self)-len(self.gap_pos),
                                           len(self.gap_pos),
                                           len(self), self.usop)
-        print("debug: {}".format(res))
         return res
 
     def get_stats_num(self):
@@ -178,7 +176,6 @@ class Alignment(object):
             tmp = l[:]
             while tmp:
                 p = tmp.pop()
-                # print("debug:p {}, tmp, {}, sum {}".format(p, tmp, sum_matches(p, tmp)))
                 res += sum_matches(p, tmp)
             return res
 
@@ -307,7 +304,7 @@ class FastaParser(object):
 def usage():
     print("""
     ######################################
-    # seqSieve v0.9.2
+    # seqSieve v0.9.3
     ######################################
     usage:
         seqSieve -f multifasta alignment
@@ -459,7 +456,6 @@ def schoenify(fasta=None,
     else:
         # arr = numpy.empty([1, 8], dtype='int32')
         arr = numpy.empty([1, 9], dtype='int32')
-        print("debug: arr {}".format(arr))
         iteration = 0
 
         fastabase = os.path.basename(fasta)
@@ -541,15 +537,11 @@ def schoenify(fasta=None,
                     info.write(m.summary(noheaders=True)+"\n")
 
             alignmentstats.append(alignment.get_stats().split(","))
-            print("debug: alignmentstats: {}".format(alignmentstats))
             tmp_stats_num = alignment.get_stats_num()
-            print("debug: alignmentstats_num: {}".format(tmp_stats_num))
-            print("debug:JOIN "+",".join(x for y in alignmentstats for x in y))
 
             iter_tab.append((",".join(x for y in alignmentstats for x in y))+","+str(iteration) +
                             "," + str(len(alignment.members)) + "," +
                             str((tmp_stats_num[5]-tmp_stats_num[4])*len(alignment.members)))
-            print("debug: itertab: {} ".format(iter_tab))
             alignmentstats = []
             if msa_tool == "mafft":
                 proc = subprocess.Popen(["mafft", "--auto", iterfile+".fa"],
@@ -604,9 +596,10 @@ def schoenify(fasta=None,
         arr = numpy.delete(arr, 0, 0)
         ###########
         LOCK.acquire()
+        #plotting_tmp(title="test", arr=arr, output_dir=finaldir)
         plt.figure(1)
         plt.suptitle(fastabase, fontsize=12)
-        ax = plt.subplot(3, 1, 1)
+        ax = plt.subplot(4, 1, 1)
 
         MATCH_COL = 0
         MATCHGAP_COL = 1
@@ -623,24 +616,30 @@ def schoenify(fasta=None,
         #if score_by_usop:
         #     SCORING_LABEL = "usop"
 
-        try:
-            plt.xticks(numpy.arange(min(arr[:, ITERATION_COL]), max(arr[:, ITERATION_COL])+1, 2.0))
-        except ValueError as e:
-            sys.stderr.write(str(e))
+        #try:
+        #    plt.xticks(numpy.arange(min(arr[:, ITERATION_COL]), max(arr[:, ITERATION_COL])+1, 2.0))
+        #except ValueError as e:
+        #    sys.stderr.write(str(e))
         #
         for i, l in zip([MATCH_COL, MATCHGAP_COL, MISMATCH_COL, NOGAP_COL, GAP_COL, LEN_COL,  ITERATION_COL, NUMSEQ_COL], ['match', 'matchWithGap', 'mismatch', 'nogap',
                                                    'gap', 'length', 'iteration', 'numSeq']):
-            if not i in [ITERATION_COL,NUMSEQ_COL]:
+            if not i in [ITERATION_COL, NUMSEQ_COL]:
                 plt.plot(arr[:, ITERATION_COL], arr[:, i], label=l)
         handles, labels = ax.get_legend_handles_labels()
         ax.legend(handles, labels, bbox_to_anchor=(1.03, 1), loc=2, borderaxespad=0.)
-        ax = plt.subplot(3, 1, 2)
-        plt.xticks(numpy.arange(min(arr[:, ITERATION_COL]), max(arr[:, ITERATION_COL])+1, 2.0))
+        plt.xticks([])
+
+        ax = plt.subplot(4, 1, 2)
+        #plt.xticks(numpy.arange(min(arr[:, ITERATION_COL]), max(arr[:, ITERATION_COL])+1, 2.0))
+        plt.xticks([])
         plt.plot(arr[:, ITERATION_COL], arr[:, NUMSEQ_COL])
         ax.set_ylabel('count')
         ax.legend(["numSeq"], bbox_to_anchor=(1.03, 0.3), loc=2, borderaxespad=0.)
-        ax = plt.subplot(3, 1, 3)
-        plt.xticks(numpy.arange(min(arr[:, ITERATION_COL]), max(arr[:, ITERATION_COL])+1, 2.0))
+
+        
+         
+        ax = plt.subplot(4, 1, 3)
+        #plt.xticks(numpy.arange(min(arr[:, ITERATION_COL]), max(arr[:, ITERATION_COL])+1, 2.0))
         scoring = (arr[:, LEN_COL]-arr[:, GAP_COL])*arr[:, NUMSEQ_COL]
         scoring_score = (arr[:, LEN_COL]-arr[:, GAP_COL])*arr[:, NUMSEQ_COL]
         scoring_usop = arr[:, USOP_COL]
@@ -654,18 +653,29 @@ def schoenify(fasta=None,
                 resouth.write("# Ranking: {}\n".format(scoring[:].argsort()[::-1]))
                 resouth.write("# Best set: {}".format(str(max_index)))
             plt.plot(arr[:, ITERATION_COL], scoring_score, label=SCORING_LABEL)
-            plt.plot(arr[:, ITERATION_COL], scoring_usop, label=SCORING_LABEL_USOP) # todo
-            ax.legend([SCORING_LABEL, SCORING_LABEL_USOP],
+            #plt.plot(arr[:, ITERATION_COL], scoring_usop, label=SCORING_LABEL_USOP) # todo
+            ax.legend([SCORING_LABEL],
                       bbox_to_anchor=(1.03, 0.3),
                       loc=2, borderaxespad=0.)
             #ax.legend([SCORING_LABEL_USOP],
             #          bbox_to_anchor=(1.03, 0.3),
             #          loc=2, borderaxespad=0.)
 
+            plt.xticks([])
+
+            ax = plt.subplot(4, 1, 4)
+            plt.plot(arr[:, ITERATION_COL], scoring_usop, label=SCORING_LABEL_USOP) # todo
+
+            ax.legend([SCORING_LABEL_USOP], bbox_to_anchor=(1.03, 0.3), loc=2, borderaxespad=0.)
+
+
+
             ax.set_xlabel('iteration')
             plt.savefig(finaldir+os.sep +
                         ".".join(fastabase.split(".")[0:-1]) +
                         '_iter.svg', bbox_inches='tight', ext="svg")
+            plt.xticks(numpy.arange(min(arr[:, ITERATION_COL]), max(arr[:, ITERATION_COL])+1, 2.0))
+
             plt.clf()
 
 
@@ -685,6 +695,43 @@ def schoenify(fasta=None,
             sys.stderr.write(str(e))
         finally:
             LOCK.release()
+
+
+def plotting_tmp(title, arr, output_dir="./"):
+        MATCH_COL = 0
+        MATCHGAP_COL = 1
+        MISMATCH_COL = 2
+        NOGAP_COL = 3
+        GAP_COL = 4
+        LEN_COL = 5
+        USOP_COL = 6
+        ITERATION_COL = 7
+        NUMSEQ_COL = 8
+        SCORING_LABEL = "(length-gaps)*numSeq"
+        SCORING_LABEL_USOP = "usop"
+       
+        fig = plt.figure()
+        ax1 = fig.add_subplot(411)
+        ax2 = fig.add_subplot(412)
+        ax3 = fig.add_subplot(413)
+        ax4 = fig.add_subplot(414)
+
+        plt.suptitle(title, fontsize=12)
+
+        for i, l in zip([MATCH_COL, MATCHGAP_COL, MISMATCH_COL, NOGAP_COL, GAP_COL, LEN_COL,  ITERATION_COL, NUMSEQ_COL], ['match', 'matchWithGap', 'mismatch', 'nogap',
+                                                   'gap', 'length', 'iteration', 'numSeq']):
+            if not i in [ITERATION_COL,NUMSEQ_COL]:
+                ax1.plot(arr[:, ITERATION_COL], arr[:, i], label=l)
+
+        #plt.show() 
+          #  ax1.set_xlabel('iteration')
+        plt.savefig(output_dir+os.sep +
+                  ".".join(title.split(".")[0:-1]) +
+                  '_iter.test.svg', bbox_inches='tight', ext="svg")
+        plt.clf()
+
+
+
 
 
 def rm_max_unique_gaps(alignment):
