@@ -22,7 +22,11 @@ It is also possible to run seqSieve without installation
 **seqSieve** will try to remove sequences that cause misalignments from a multiple sequence alignment(MSA).
 It reads a given MSA in multi-fasta format and removes sequences with the highest penalty scores, 
 then builds the next MSA without those sequences. This process is repeated until a user-specified 
-cutt-off is reached or less than three sequences are left to be aligned.
+cut-off is reached or less than three sequences are left to be aligned.
+
+In the default mode "Sites", sequences are penalized for both gaps and insertions by an amount proportional to the percentage of ungapped and gapped sequences, respectively.
+The modes "Gaps", "uGaps","Insertions", "uInsertions","uInsertionsGaps" always assign a penalty of 1 for the named variation. "u" stands for unique, i.e. uGaps only penalizes unique gaps.
+With mode "custom" the user sets the penalties for each variation. 
 
 Usage:
     
