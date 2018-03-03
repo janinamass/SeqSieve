@@ -32,7 +32,7 @@ import matplotlib.pyplot as plt
 import numpy
 from distutils import spawn
 
-__version__ = "0.9.2"
+__version__ = "0.9.3"
 
 GAP = "-"
 LOCK = threading.Lock()
@@ -55,7 +55,6 @@ class Alignment(object):
         self.calc_numbers()
 
         self.usop = self.calc_usop()
-        # print("debug: usop: {}".format(self.usop))
 
     def __repr__(self):
         ids = self.members
@@ -72,19 +71,19 @@ class Alignment(object):
     def get_stats(self):
         """Return information about alignment (str, 6 comma-separated col)"""
         res = ""
-        res += "{},{},{},{},{},{}".format(len(self.match_pos),
+        res += "{},{},{},{},{},{},{}".format(len(self.match_pos),
                                           len(self.match_gap_pos),
                                           len(self.mismatch_pos),
                                           len(self)-len(self.gap_pos),
                                           len(self.gap_pos),
-                                          len(self))
+                                          len(self), self.usop)
         return res
 
     def get_stats_num(self):
         """Return information about alignment as list of ints """
         res = [len(self.match_pos), len(self.match_gap_pos),
                len(self.mismatch_pos), len(self)-len(self.gap_pos),
-               len(self.gap_pos), len(self)]
+               len(self.gap_pos), len(self), self.usop]
         return res
 
     def attach_sequences(self):
@@ -177,13 +176,13 @@ class Alignment(object):
             tmp = l[:]
             while tmp:
                 p = tmp.pop()
-                #print("debug:p {}, tmp, {}, sum {}".format(p, tmp, sum_matches(p, tmp)))
                 res += sum_matches(p, tmp)
             return res
+
         res = 0
         for i in range(0, len(self)):
             column = [m.sequence[i] for m in self.members]  # whole column
-            if not GAP in column:
+            if GAP not in column:
                 column_usop = usop(column)
                 res += column_usop
             else:
@@ -305,7 +304,7 @@ class FastaParser(object):
 def usage():
     print("""
     ######################################
-    # seqSieve v0.9.2
+    # seqSieve v0.9.3
     ######################################
     usage:
         seqSieve -f multifasta alignment
@@ -444,18 +443,19 @@ def schoenify(fasta=None,
               msa_tool=None,
               mode=None,
               logging=None,
-              print_alignment = None,
+              print_alignment=None,
               gap_penalty=None,
               unique_gap_penalty=None,
               insertion_penalty=None,
               unique_insertion_penalty=None,
               mismatch_penalty=None,
-              match_reward=None):
+              match_reward=None, score_by_usop=False):
 
     if not fasta:
         raise Exception("Schoenify: Need alignment in fasta format.")
     else:
-        arr = numpy.empty([1, 8], dtype='int32')
+        # arr = numpy.empty([1, 8], dtype='int32')
+        arr = numpy.empty([1, 9], dtype='int32')
         iteration = 0
 
         fastabase = os.path.basename(fasta)
@@ -464,7 +464,7 @@ def schoenify(fasta=None,
         resout = finaldir + os.sep + ".".join(fastabase.split(".")[0:-1]) + "_ranks.txt"
 
         if logging:
-            #write header
+            # write header
             info = open(statsout, "w")
             info.write("{},{},{},{},{},{},{}\n".format("id",
                                                        "insertions_caused",
@@ -472,7 +472,7 @@ def schoenify(fasta=None,
                                                        "gaps_caused",
                                                        "unique_gaps_caused",
                                                        "penalty",
-                                                       "dynPenalty"))
+                                                       "dynPenalty", "usop"))  # todo
         iter_tab = []
         header_tab = ["matches",
                       "matchesWithGaps",
@@ -480,6 +480,7 @@ def schoenify(fasta=None,
                       "noGap",
                       "gaps",
                       "length",
+                      "usop",
                       "iteration",
                       "numSeq",
                       '(length-gaps)*numSeq']
@@ -537,6 +538,7 @@ def schoenify(fasta=None,
 
             alignmentstats.append(alignment.get_stats().split(","))
             tmp_stats_num = alignment.get_stats_num()
+
             iter_tab.append((",".join(x for y in alignmentstats for x in y))+","+str(iteration) +
                             "," + str(len(alignment.members)) + "," +
                             str((tmp_stats_num[5]-tmp_stats_num[4])*len(alignment.members)))
@@ -587,35 +589,62 @@ def schoenify(fasta=None,
             taboutf.write("\n")
             taboutf.write("\n".join(iter_tab))
         for i in iter_tab:
+            print(i)
             row = [int(j) for j in i.split(",")[:-1]]
             arr = numpy.vstack((arr, numpy.array(row)))
         # delete row filled with zeros
         arr = numpy.delete(arr, 0, 0)
         ###########
         LOCK.acquire()
+        #plotting_tmp(title="test", arr=arr, output_dir=finaldir)
         plt.figure(1)
         plt.suptitle(fastabase, fontsize=12)
-        ax = plt.subplot(3, 1, 1)
+        ax = plt.subplot(4, 1, 1)
 
-        try:
-            plt.xticks(numpy.arange(min(arr[:, 6]), max(arr[:, 6])+1, 2.0))
-        except ValueError as e:
-            sys.stderr.write(str(e))
+        MATCH_COL = 0
+        MATCHGAP_COL = 1
+        MISMATCH_COL = 2
+        NOGAP_COL = 3
+        GAP_COL = 4
+        LEN_COL = 5
+        USOP_COL = 6
+        ITERATION_COL = 7
+        NUMSEQ_COL = 8
+        SCORING_LABEL = "(length-gaps)*numSeq"
+        SCORING_LABEL_USOP = "usop"
+
+        #if score_by_usop:
+        #     SCORING_LABEL = "usop"
+
+        #try:
+        #    plt.xticks(numpy.arange(min(arr[:, ITERATION_COL]), max(arr[:, ITERATION_COL])+1, 2.0))
+        #except ValueError as e:
+        #    sys.stderr.write(str(e))
         #
-        for i, l in zip([0, 1, 2, 3, 4, 5, 6, 7], ['match', 'matchWithGap', 'mismatch', 'nogap',
+        for i, l in zip([MATCH_COL, MATCHGAP_COL, MISMATCH_COL, NOGAP_COL, GAP_COL, LEN_COL,  ITERATION_COL, NUMSEQ_COL], ['match', 'matchWithGap', 'mismatch', 'nogap',
                                                    'gap', 'length', 'iteration', 'numSeq']):
-            if not i in [6, 7]:
-                plt.plot(arr[:, 6], arr[:, i], label=l)
+            if not i in [ITERATION_COL, NUMSEQ_COL]:
+                plt.plot(arr[:, ITERATION_COL], arr[:, i], label=l)
         handles, labels = ax.get_legend_handles_labels()
         ax.legend(handles, labels, bbox_to_anchor=(1.03, 1), loc=2, borderaxespad=0.)
-        ax = plt.subplot(3, 1, 2)
-        plt.xticks(numpy.arange(min(arr[:, 6]), max(arr[:, 6])+1, 2.0))
-        plt.plot(arr[:, 6], arr[:, 7])
+        plt.xticks([])
+
+        ax = plt.subplot(4, 1, 2)
+        #plt.xticks(numpy.arange(min(arr[:, ITERATION_COL]), max(arr[:, ITERATION_COL])+1, 2.0))
+        plt.xticks([])
+        plt.plot(arr[:, ITERATION_COL], arr[:, NUMSEQ_COL])
         ax.set_ylabel('count')
         ax.legend(["numSeq"], bbox_to_anchor=(1.03, 0.3), loc=2, borderaxespad=0.)
-        ax = plt.subplot(3, 1, 3)
-        plt.xticks(numpy.arange(min(arr[:, 6]), max(arr[:, 6])+1, 2.0))
-        scoring = (arr[:, 5]-arr[:, 4])*arr[:, 7]
+
+        
+         
+        ax = plt.subplot(4, 1, 3)
+        #plt.xticks(numpy.arange(min(arr[:, ITERATION_COL]), max(arr[:, ITERATION_COL])+1, 2.0))
+        scoring = (arr[:, LEN_COL]-arr[:, GAP_COL])*arr[:, NUMSEQ_COL]
+        scoring_score = (arr[:, LEN_COL]-arr[:, GAP_COL])*arr[:, NUMSEQ_COL]
+        scoring_usop = arr[:, USOP_COL]
+        if score_by_usop:
+            scoring = scoring_usop
 
         try:
             max_index = scoring.argmax()
@@ -623,15 +652,30 @@ def schoenify(fasta=None,
             with open(resout, 'w')as resouth:
                 resouth.write("# Ranking: {}\n".format(scoring[:].argsort()[::-1]))
                 resouth.write("# Best set: {}".format(str(max_index)))
-            plt.plot(arr[:, 6], scoring)
-            ax.legend(["(length-gaps)*numSeq"],
+            plt.plot(arr[:, ITERATION_COL], scoring_score, label=SCORING_LABEL)
+            #plt.plot(arr[:, ITERATION_COL], scoring_usop, label=SCORING_LABEL_USOP) # todo
+            ax.legend([SCORING_LABEL],
                       bbox_to_anchor=(1.03, 0.3),
                       loc=2, borderaxespad=0.)
+            #ax.legend([SCORING_LABEL_USOP],
+            #          bbox_to_anchor=(1.03, 0.3),
+            #          loc=2, borderaxespad=0.)
+
+            plt.xticks([])
+
+            ax = plt.subplot(4, 1, 4)
+            plt.plot(arr[:, ITERATION_COL], scoring_usop, label=SCORING_LABEL_USOP) # todo
+
+            ax.legend([SCORING_LABEL_USOP], bbox_to_anchor=(1.03, 0.3), loc=2, borderaxespad=0.)
+
+
 
             ax.set_xlabel('iteration')
             plt.savefig(finaldir+os.sep +
                         ".".join(fastabase.split(".")[0:-1]) +
                         '_iter.svg', bbox_inches='tight', ext="svg")
+            plt.xticks(numpy.arange(min(arr[:, ITERATION_COL]), max(arr[:, ITERATION_COL])+1, 2.0))
+
             plt.clf()
 
 
@@ -651,6 +695,43 @@ def schoenify(fasta=None,
             sys.stderr.write(str(e))
         finally:
             LOCK.release()
+
+
+def plotting_tmp(title, arr, output_dir="./"):
+        MATCH_COL = 0
+        MATCHGAP_COL = 1
+        MISMATCH_COL = 2
+        NOGAP_COL = 3
+        GAP_COL = 4
+        LEN_COL = 5
+        USOP_COL = 6
+        ITERATION_COL = 7
+        NUMSEQ_COL = 8
+        SCORING_LABEL = "(length-gaps)*numSeq"
+        SCORING_LABEL_USOP = "usop"
+       
+        fig = plt.figure()
+        ax1 = fig.add_subplot(411)
+        ax2 = fig.add_subplot(412)
+        ax3 = fig.add_subplot(413)
+        ax4 = fig.add_subplot(414)
+
+        plt.suptitle(title, fontsize=12)
+
+        for i, l in zip([MATCH_COL, MATCHGAP_COL, MISMATCH_COL, NOGAP_COL, GAP_COL, LEN_COL,  ITERATION_COL, NUMSEQ_COL], ['match', 'matchWithGap', 'mismatch', 'nogap',
+                                                   'gap', 'length', 'iteration', 'numSeq']):
+            if not i in [ITERATION_COL,NUMSEQ_COL]:
+                ax1.plot(arr[:, ITERATION_COL], arr[:, i], label=l)
+
+        #plt.show() 
+          #  ax1.set_xlabel('iteration')
+        plt.savefig(output_dir+os.sep +
+                  ".".join(title.split(".")[0:-1]) +
+                  '_iter.test.svg', bbox_inches='tight', ext="svg")
+        plt.clf()
+
+
+
 
 
 def rm_max_unique_gaps(alignment):
@@ -734,7 +815,7 @@ class SchoenifyThread(threading.Thread):
     def __init__(self, fasta, max_iter, finaldir, tmpdir, msa_tool,
                  mode, logging, print_alignment, gap_penalty, unique_gap_penalty,
                  insertion_penalty, unique_insertion_penalty,
-                 mismatch_penalty, match_reward):
+                 mismatch_penalty, match_reward, score_by_usop):
         super(SchoenifyThread, self).__init__()
         self.fasta = fasta
         self.max_iter = max_iter
@@ -744,13 +825,15 @@ class SchoenifyThread(threading.Thread):
         self.mode = mode
         self.logging = logging
         self.print_alignment = print_alignment
-    # custom
+        # custom
         self.gap_penalty = gap_penalty
         self.unique_gap_penalty = unique_gap_penalty
         self.insertion_penalty = insertion_penalty
         self.unique_insertion_penalty = unique_insertion_penalty
         self.mismatch_penalty = mismatch_penalty
         self.match_reward = match_reward
+
+        self.score_by_usop = score_by_usop
 
     def run(self):
         SEMAPHORE.acquire()
@@ -763,7 +846,7 @@ class SchoenifyThread(threading.Thread):
                       insertion_penalty=self.insertion_penalty,
                       unique_insertion_penalty=self.unique_insertion_penalty,
                       mismatch_penalty=self.mismatch_penalty,
-                      match_reward=self.match_reward)
+                      match_reward=self.match_reward, score_by_usop=self.score_by_usop)
         except TooFewSequencesException as e:
             sys.stderr.write(str(e))
         SEMAPHORE.release()
@@ -797,10 +880,11 @@ def main():
     unique_insertion_penalty = 1.0
     mismatch_penalty = 1.0
     match_reward = -10.0
+    score_by_usop = False
 
     try:
         opts, args = getopt.gnu_getopt(sys.argv[1:],
-                                       "f:F:s:o:i:a:n:m:g:G:j:J:M:r:qlhp",
+                                       "f:F:s:o:i:a:n:m:g:G:j:J:M:r:uqlhp",
                                        ["fasta=",
                                         "fasta_dir=",
                                         "suffix=",
@@ -815,6 +899,7 @@ def main():
                                         "unique_insertion_penalty=",
                                         "mismatch_penalty=",
                                         "match_reward=",
+                                        "score_usop",
                                         "no-realign",
                                         "log",
                                         "help",
@@ -847,6 +932,8 @@ def main():
             print_alignment = True
         elif o in ("-q", "--no-realign"):
             no_realign = True
+        elif o in ("-u", "--score_usop"):
+            score_by_usop = True
 
         # only for mode "custom":
         elif o in ("-g", "--gap_penalty"):
@@ -909,7 +996,7 @@ def main():
                         insertion_penalty,
                         unique_insertion_penalty,
                         mismatch_penalty,
-                        match_reward).start()
+                        match_reward, score_by_usop).start()
 #############################################
 
 
